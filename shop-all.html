@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shop all | Lhamo Atelier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html#top" aria-label="Lhamo Atelier home">Lhamo Atelier</a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a href="index.html#collections">New arrivals</a>
+        <a href="shop-all.html" aria-current="page">Shop all</a>
+        <a href="bazi-reading.html">Element finder</a>
+        <a href="index.html#library">Library</a>
+      </nav>
+      <nav class="utility-nav" aria-label="Utility navigation">
+        <a href="policies.html">Service</a>
+        <a href="shop-all.html">Cart 0</a>
+      </nav>
+    </header>
+
+    <main class="shop-page">
+      <section class="shop-heading">
+        <p class="meta">Complete collection</p>
+        <h1>Shop all</h1>
+        <p>Bracelets and mala-inspired compositions arranged by element, material and symbolic use.</p>
+      </section>
+
+      <section class="shop-layout" aria-label="Shop all products">
+        <aside class="shop-filter" aria-label="Product filters">
+          <div class="filter-header">
+            <h2>Filter</h2>
+            <button type="button" id="clear-filters">Clear</button>
+          </div>
+          <fieldset>
+            <legend>Category</legend>
+            <label><input type="checkbox" name="category" value="bracelet" /> Bracelets</label>
+            <label><input type="checkbox" name="category" value="mala" /> Mala stacks</label>
+            <label><input type="checkbox" name="category" value="gift" /> Gifts</label>
+          </fieldset>
+          <fieldset>
+            <legend>Element</legend>
+            <label><input type="checkbox" name="element" value="wood" /> Wood</label>
+            <label><input type="checkbox" name="element" value="fire" /> Fire</label>
+            <label><input type="checkbox" name="element" value="earth" /> Earth</label>
+            <label><input type="checkbox" name="element" value="metal" /> Metal</label>
+            <label><input type="checkbox" name="element" value="water" /> Water</label>
+          </fieldset>
+          <fieldset>
+            <legend>Material</legend>
+            <label><input type="checkbox" name="material" value="turquoise" /> Turquoise</label>
+            <label><input type="checkbox" name="material" value="agate" /> Agate</label>
+            <label><input type="checkbox" name="material" value="sandalwood" /> Sandalwood</label>
+            <label><input type="checkbox" name="material" value="silver" /> Silver</label>
+          </fieldset>
+          <fieldset>
+            <legend>Price</legend>
+            <label><input type="checkbox" name="price" value="under-280" /> Under $280</label>
+            <label><input type="checkbox" name="price" value="280-320" /> $280 to $320</label>
+            <label><input type="checkbox" name="price" value="over-320" /> Over $320</label>
+          </fieldset>
+        </aside>
+
+        <div class="shop-results">
+          <div class="shop-results-bar">
+            <p><span id="product-count">4</span> pieces</p>
+            <span>Sort: Curated order</span>
+          </div>
+          <div class="shop-product-grid" id="shop-products">
+            <article class="product-card shop-product" data-category="bracelet gift" data-element="wood water" data-material="turquoise" data-price="under-280">
+              <a href="product.html?product=green-tara-turquoise-stack"><img class="product-visual" src="assets/bracelet-verdant.png" alt="Green jade, smoky quartz and turquoise bracelet" /></a>
+              <p class="badge">Online exclusive</p>
+              <h3><a href="product.html?product=green-tara-turquoise-stack">Green Tara Turquoise Stack</a></h3>
+              <p>Turquoise, green aventurine, sandalwood and vermeil granules</p>
+              <strong>$268</strong>
+              <a class="card-action" href="product.html?product=green-tara-turquoise-stack">View details</a>
+            </article>
+            <article class="product-card shop-product" data-category="bracelet gift" data-element="fire earth" data-material="agate" data-price="280-320">
+              <a href="product.html?product=coral-flame-protection-bracelet"><img class="product-visual" src="assets/bracelet-ember.png" alt="Carnelian, garnet and dark rosewood bracelet" /></a>
+              <p class="badge">New addition</p>
+              <h3><a href="product.html?product=coral-flame-protection-bracelet">Coral Flame Protection Bracelet</a></h3>
+              <p>Red agate, coral-tone jasper, amber and dark obsidian</p>
+              <strong>$318</strong>
+              <a class="card-action" href="product.html?product=coral-flame-protection-bracelet">View details</a>
+            </article>
+            <article class="product-card shop-product" data-category="mala bracelet" data-element="earth wood" data-material="sandalwood" data-price="under-280">
+              <a href="product.html?product=sandalwood-grounding-mala"><img class="product-visual" src="assets/bracelet-earth.png" alt="Amber, tiger eye and pale stone bracelet" /></a>
+              <p class="badge">Small batch</p>
+              <h3><a href="product.html?product=sandalwood-grounding-mala">Sandalwood Grounding Mala</a></h3>
+              <p>Old sandalwood, tiger eye, honey jade and brushed brass</p>
+              <strong>$246</strong>
+              <a class="card-action" href="product.html?product=sandalwood-grounding-mala">View details</a>
+            </article>
+            <article class="product-card shop-product" data-category="bracelet gift" data-element="metal water" data-material="silver" data-price="280-320">
+              <a href="product.html?product=moon-silver-mantra-bracelet"><img class="product-visual" src="assets/bracelet-lunar.png" alt="Moonstone, obsidian and labradorite bracelet" /></a>
+              <p class="badge">Signature</p>
+              <h3><a href="product.html?product=moon-silver-mantra-bracelet">Moon Silver Mantra Bracelet</a></h3>
+              <p>White jade, quartz, obsidian and sterling silver accents</p>
+              <strong>$296</strong>
+              <a class="card-action" href="product.html?product=moon-silver-mantra-bracelet">View details</a>
+            </article>
+          </div>
+          <p class="empty-results" id="empty-results" hidden>No pieces match these filters.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Lhamo Atelier</span>
+      <nav>
+        <a href="shop-all.html">Shop all</a>
+        <a href="bazi-reading.html">Element finder</a>
+        <a href="index.html#library">Library</a>
+        <a href="policies.html">Customer service</a>
+      </nav>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

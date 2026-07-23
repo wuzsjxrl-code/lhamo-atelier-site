@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BaZi Bracelet Finder | Lhamo Atelier</title>
+    <meta name="description" content="A simplified BaZi and Five Elements bracelet finder for Tibetan-inspired jewellery." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="notice-stack">
+      <p>Complimentary shipping with jewellery orders over $250.</p>
+      <p>Receive a hand-written care card with every bracelet composition.</p>
+    </div>
+
+    <header class="site-header">
+      <a class="brand" href="index.html#top" aria-label="Lhamo Atelier home">Lhamo Atelier</a>
+      <nav class="main-nav" aria-label="Primary navigation">
+        <a href="index.html#collections">New arrivals</a>
+        <a href="shop-all.html">Shop all</a>
+        <a href="bazi-reading.html" aria-current="page">Element finder</a>
+        <a href="index.html#library">Library</a>
+      </nav>
+      <nav class="utility-nav" aria-label="Utility navigation">
+        <a href="policies.html">Service</a>
+        <a href="index.html#collections">Cart 0</a>
+      </nav>
+    </header>
+
+    <main class="reading-page">
+      <section class="reading-hero aesop-panel">
+        <div class="panel-copy">
+          <p class="meta">Five Elements reading</p>
+          <h1>The BaZi Bracelet Finder</h1>
+          <p>
+            Enter birth date, Chinese birth hour and birthplace. The reading
+            translates core BaZi signals into a considered jewellery direction.
+          </p>
+          <a class="text-link" href="index.html#guide">Back to introduction</a>
+        </div>
+        <div class="finder-card" id="finder-card">
+          <form id="element-form">
+            <div class="form-grid">
+              <fieldset class="date-fields">
+                <legend>&#20986;&#29983;&#24180;&#26376;&#26085; / Birth date</legend>
+                <label for="birth-year">Year
+                  <input id="birth-year" name="birthYear" type="number" inputmode="numeric" min="1900" max="2100" required />
+                </label>
+                <label for="birth-month">Month
+                  <input id="birth-month" name="birthMonth" type="number" inputmode="numeric" min="1" max="12" required />
+                </label>
+                <label for="birth-day">Day
+                  <input id="birth-day" name="birthDay" type="number" inputmode="numeric" min="1" max="31" required />
+                </label>
+              </fieldset>
+              <label for="birthtime">&#20986;&#29983;&#26102;&#38388; / Birth hour
+                <select id="birthtime" name="birthtime" required>
+                  <option value="">Select Chinese hour</option>
+                  <option value="unknown">Unknown birth hour</option>
+                  <option value="00:00">&#23376;&#26102; Zi / 23:00-00:59</option>
+                  <option value="02:00">&#19985;&#26102; Chou / 01:00-02:59</option>
+                  <option value="04:00">&#23493;&#26102; Yin / 03:00-04:59</option>
+                  <option value="06:00">&#21359;&#26102; Mao / 05:00-06:59</option>
+                  <option value="08:00">&#36784;&#26102; Chen / 07:00-08:59</option>
+                  <option value="10:00">&#24051;&#26102; Si / 09:00-10:59</option>
+                  <option value="12:00">&#21320;&#26102; Wu / 11:00-12:59</option>
+                  <option value="14:00">&#26410;&#26102; Wei / 13:00-14:59</option>
+                  <option value="16:00">&#30003;&#26102; Shen / 15:00-16:59</option>
+                  <option value="18:00">&#37221;&#26102; You / 17:00-18:59</option>
+                  <option value="20:00">&#25100;&#26102; Xu / 19:00-20:59</option>
+                  <option value="22:00">&#20133;&#26102; Hai / 21:00-22:59</option>
+                </select>
+              </label>
+              <div class="location-row">
+                <label for="birth-country">Birth country
+                  <select id="birth-country" name="birthCountry" required>
+                    <option value="">Select country</option>
+                  </select>
+                </label>
+                <label for="birth-region">Province / state
+                  <select id="birth-region" name="birthRegion" required disabled>
+                    <option value="">Select country first</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+            <div class="input-row submit-row">
+              <button type="submit">Find your composition</button>
+            </div>
+            <small>Includes a simplified BaZi reading using date, birth time and birthplace, translated into a Five Elements jewellery direction.</small>
+          </form>
+          <article id="result" hidden>
+            <p id="result-kicker"></p>
+            <h3 id="result-title"></h3>
+            <p id="result-copy"></p>
+            <div class="bazi-summary" aria-label="Core BaZi reading">
+              <div class="bazi-pillars">
+                <span><small>Year pillar</small><b id="bazi-year"></b></span>
+                <span><small>Month pillar</small><b id="bazi-month"></b></span>
+                <span><small>Day pillar</small><b id="bazi-day"></b></span>
+                <span><small>Hour pillar</small><b id="bazi-hour"></b></span>
+                <span><small>Dominant note</small><b id="bazi-dominant"></b></span>
+              </div>
+              <p class="bazi-note" id="bazi-note"></p>
+              <div class="bazi-detail">
+                <article>
+                  <strong>Pattern / &#26684;&#23616;</strong>
+                  <p id="bazi-pattern"></p>
+                </article>
+                <article>
+                  <strong>Five Elements cycle / &#20116;&#34892;&#29983;&#20811;</strong>
+                  <div class="element-cycle-visual" role="img" aria-label="Five Elements generating and controlling cycle">
+                    <svg viewBox="0 0 420 320" aria-hidden="true">
+                      <defs>
+                        <marker id="arrow-main" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                          <path d="M0,0 L8,4 L0,8 Z"></path>
+                        </marker>
+                      </defs>
+                      <path class="cycle-generate" d="M210 46 L328 132 L283 270 L137 270 L92 132 Z"></path>
+                      <path class="cycle-control" d="M210 46 L283 270 L92 132 L328 132 L137 270 Z"></path>
+                      <g>
+                        <circle cx="210" cy="46" r="34"></circle>
+                        <text x="210" y="40">Wood</text>
+                        <text x="210" y="60">&#26408;</text>
+                      </g>
+                      <g>
+                        <circle cx="328" cy="132" r="34"></circle>
+                        <text x="328" y="126">Fire</text>
+                        <text x="328" y="146">&#28779;</text>
+                      </g>
+                      <g>
+                        <circle cx="283" cy="270" r="34"></circle>
+                        <text x="283" y="264">Earth</text>
+                        <text x="283" y="284">&#22303;</text>
+                      </g>
+                      <g>
+                        <circle cx="137" cy="270" r="34"></circle>
+                        <text x="137" y="264">Metal</text>
+                        <text x="137" y="284">&#37329;</text>
+                      </g>
+                      <g>
+                        <circle cx="92" cy="132" r="34"></circle>
+                        <text x="92" y="126">Water</text>
+                        <text x="92" y="146">&#27700;</text>
+                      </g>
+                    </svg>
+                  </div>
+                  <p id="element-cycle-copy"></p>
+                </article>
+                <article>
+                  <strong>Element balance / &#20116;&#34892;&#21344;&#27604;</strong>
+                  <div class="ratio-bars" id="element-bars"></div>
+                  <div class="element-meanings" id="element-meanings"></div>
+                  <p class="bazi-summary-line" id="bazi-strength-summary"></p>
+                </article>
+                <article>
+                  <strong>Ten Gods ratio / &#21313;&#31070;&#21344;&#27604;</strong>
+                  <div class="ratio-bars" id="ten-god-bars"></div>
+                  <p id="ten-god-copy"></p>
+                </article>
+              </div>
+              <div class="bazi-grid">
+                <article><strong>Day Master / &#26085;&#20027;</strong><p id="bazi-personality"></p></article>
+                <article><strong>Month Command / &#26376;&#20196;</strong><p id="bazi-money"></p></article>
+                <article><strong>Structure / &#26684;&#23616;</strong><p id="bazi-love"></p></article>
+                <article><strong>Wealth and Work / &#36130;&#23500;&#20107;&#19994;</strong><p id="bazi-wealth"></p></article>
+                <article><strong>Relationship Tone / &#20851;&#31995;&#20542;&#21521;</strong><p id="bazi-career"></p></article>
+                <article><strong>Health Rhythm / &#20581;&#24247;&#20316;&#24687;</strong><p id="bazi-health"></p></article>
+              </div>
+            </div>
+            <div class="recommendation">
+              <div id="result-visual" class="product-visual"></div>
+              <div>
+                <span id="result-materials"></span>
+                <a id="result-product-link" href="shop-all.html">View recommended piece</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="assets/lunar.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
