@@ -216,6 +216,20 @@ const elementMeanings = {
     meaning: "Wisdom, intuition, rest, memory, travel, research and the capacity to adapt."
   }
 };
+const elementJewelleryDirections = {
+  Wood: "Wood is supported with green, teal and living textures: turquoise, green aventurine, jade tones, sandalwood and slim warm-metal details.",
+  Fire: "Fire is supported with red, coral and warm amber tones: red agate, garnet, amber, coral-tone jasper and a small amount of dark grounding stone.",
+  Earth: "Earth is supported with ochre, honey and mineral warmth: tiger eye, honey jade, yellow jasper, old sandalwood, brass and matte neutral beads.",
+  Metal: "Metal is supported with white, silver and polished clarity: white jade, clear quartz, moonstone, sterling silver and precise black contrast.",
+  Water: "Water is supported with black, deep blue and reflective coolness: obsidian, black onyx, lapis, smoky quartz, aquamarine tones and silver."
+};
+const relationCopy = {
+  companion: "same-element support",
+  resource: "resource that nourishes the Day Master",
+  output: "expression that releases the Day Master's pressure",
+  wealth: "value and money star that the Day Master manages",
+  officer: "authority, structure and career pressure that regulates the Day Master"
+};
 const monthBranchByGregorianMonth = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0];
 const birthRegions = {
   China: ["Beijing", "Shanghai", "Tianjin", "Chongqing", "Hebei", "Shanxi", "Liaoning", "Jilin", "Heilongjiang", "Jiangsu", "Zhejiang", "Anhui", "Fujian", "Jiangxi", "Shandong", "Henan", "Hubei", "Hunan", "Guangdong", "Hainan", "Sichuan", "Guizhou", "Yunnan", "Shaanxi", "Gansu", "Qinghai", "Taiwan", "Inner Mongolia", "Guangxi", "Tibet", "Ningxia", "Xinjiang", "Hong Kong", "Macau"],
@@ -428,11 +442,128 @@ function getChartStrengthSummary(bazi) {
   const lowElements = getLowestKeys(bazi.elementCounts, 2);
   const topGod = getTopKeys(bazi.tenGodCounts, 1)[0];
   const advantage = topGod ? tenGodInsights[topGod] : `${elementNames[topElements[0]]} steadiness`;
-  return `Strength: the chart is naturally good at ${advantage}. Watchpoint: ${lowElements.map((element) => elementNames[element]).join(" and ")} are quieter, so the person may need more conscious balance in those areas.`;
+  const avoidText = bazi.strength.avoidElements.map((element) => elementNames[element]).join(", ");
+  return `${bazi.strength.level}. Useful God / \u7528\u795e: ${elementNames[bazi.yongShen]}; assisting favourable element / \u559c\u795e: ${elementNames[bazi.xiShen]}; elements to avoid over-emphasising / \u5fcc\u795e: ${avoidText}. Strength: ${advantage}. Watchpoint: ${lowElements.map((element) => elementNames[element]).join(" and ")} are quieter, so the person may need more conscious balance in those areas.`;
 }
 
 function getElementByControlTarget(targetElement) {
   return Object.keys(controlCycle).find((element) => controlCycle[element] === targetElement);
+}
+
+function getElementThatGenerates(targetElement) {
+  return Object.keys(supportCycle).find((element) => supportCycle[element] === targetElement);
+}
+
+function getElementRelation(dayElement, targetElement) {
+  if (targetElement === dayElement) return "companion";
+  if (supportCycle[targetElement] === dayElement) return "resource";
+  if (supportCycle[dayElement] === targetElement) return "output";
+  if (controlCycle[dayElement] === targetElement) return "wealth";
+  if (controlCycle[targetElement] === dayElement) return "officer";
+  return "mixed";
+}
+
+function getWeightedElementSignals(pillars) {
+  const signals = [];
+  const visibleWeights = {
+    year: { stem: 0.8, branch: 0.9 },
+    month: { stem: 1.4, branch: 3 },
+    day: { stem: 0, branch: 1.8 },
+    hour: { stem: 0.8, branch: 0.9 }
+  };
+  Object.entries(pillars).forEach(([key, pillar]) => {
+    const weights = visibleWeights[key] || { stem: 0.8, branch: 0.8 };
+    if (weights.stem && pillar.stemElement) signals.push({ element: pillar.stemElement, weight: weights.stem, source: `${key} stem` });
+    if (weights.branch && pillar.branchElement) signals.push({ element: pillar.branchElement, weight: weights.branch, source: `${key} branch` });
+    (branchHiddenStems[pillar.branch] || []).forEach((stem, index) => {
+      const element = getStemElement(stem);
+      const hiddenWeight = key === "month" ? [1.1, 0.55, 0.3][index] : [0.55, 0.28, 0.15][index];
+      if (element) signals.push({ element, weight: hiddenWeight || 0.15, source: `${key} hidden stem` });
+    });
+  });
+  return signals;
+}
+
+function analyseDayMasterStrength(pillars, counts) {
+  const dayElement = pillars.day.stemElement;
+  const producerElement = getElementThatGenerates(dayElement);
+  const outputElement = supportCycle[dayElement];
+  const wealthElement = controlCycle[dayElement];
+  const officerElement = getElementByControlTarget(dayElement);
+  const signals = getWeightedElementSignals(pillars);
+  const relationWeights = {
+    companion: 1,
+    resource: 0.9,
+    output: -0.65,
+    wealth: -0.75,
+    officer: -0.9,
+    mixed: 0
+  };
+  const score = signals.reduce((sum, signal) => {
+    const relation = getElementRelation(dayElement, signal.element);
+    return sum + signal.weight * relationWeights[relation];
+  }, 0);
+  const level = score >= 2.2 ? "Strong Day Master / \u8eab\u5f3a" : score <= -1.2 ? "Weak Day Master / \u8eab\u5f31" : "Balanced Day Master / \u4e2d\u548c";
+  const isStrong = score >= 2.2;
+  const isWeak = score <= -1.2;
+  let yongShen = outputElement;
+  let xiShen = wealthElement;
+  let avoidElements = [dayElement, producerElement];
+
+  if (isWeak) {
+    yongShen = producerElement;
+    xiShen = dayElement;
+    avoidElements = [wealthElement, officerElement, outputElement];
+  } else if (isStrong) {
+    const outputIsCrowded = (counts[outputElement] || 0) >= 3;
+    yongShen = outputIsCrowded ? wealthElement : outputElement;
+    xiShen = outputIsCrowded ? officerElement : wealthElement;
+    avoidElements = [dayElement, producerElement];
+  } else {
+    const candidateElements = [producerElement, outputElement, wealthElement, officerElement, dayElement];
+    yongShen = candidateElements.sort((a, b) => (counts[a] || 0) - (counts[b] || 0))[0] || outputElement;
+    xiShen = yongShen === producerElement ? dayElement : wealthElement;
+    avoidElements = getTopKeys(counts, 2);
+  }
+
+  const supportScore = signals
+    .filter((signal) => ["companion", "resource"].includes(getElementRelation(dayElement, signal.element)))
+    .reduce((sum, signal) => sum + signal.weight, 0);
+  const pressureScore = signals
+    .filter((signal) => ["output", "wealth", "officer"].includes(getElementRelation(dayElement, signal.element)))
+    .reduce((sum, signal) => sum + signal.weight, 0);
+
+  return {
+    dayElement,
+    score,
+    level,
+    yongShen,
+    xiShen,
+    avoidElements,
+    supportScore,
+    pressureScore,
+    reason: isWeak
+      ? `The Day Master is under-supported: resource and same-element qi are lighter than output, wealth and officer pressure. Useful God is ${elementNames[yongShen]} to nourish and restore the self.`
+      : isStrong
+        ? `The Day Master has enough root and support. Useful God is ${elementNames[yongShen]} to release, shape and circulate the chart rather than adding more self-support.`
+        : `The Day Master is relatively balanced. Useful God is ${elementNames[yongShen]} because it is one of the quieter balancing notes in this chart.`
+  };
+}
+
+function completeBaziResult(pillars) {
+  const counts = buildElementCounts(pillars);
+  const dominant = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+  const tenGodCounts = buildTenGodCounts(pillars);
+  const strength = analyseDayMasterStrength(pillars, counts);
+  return {
+    pillars,
+    dominant,
+    elementCounts: counts,
+    tenGodCounts,
+    strength,
+    yongShen: strength.yongShen,
+    xiShen: strength.xiShen
+  };
 }
 
 function getDetailedBirthReading(bazi, recommendedElement) {
@@ -447,18 +578,19 @@ function getDetailedBirthReading(bazi, recommendedElement) {
   const wealthElement = controlCycle[dayElement];
   const authorityElement = getElementByControlTarget(dayElement);
   const outputElement = supportCycle[dayElement];
-  const resourceElement = getElementByControlTarget(dayElement) ? supportCycle[getElementByControlTarget(dayElement)] : monthElement;
+  const resourceElement = getElementThatGenerates(dayElement);
   const patternText = getPatternReading(bazi);
+  const strength = bazi.strength;
   const topGodText = topGods.length
     ? topGods.map((god) => `${tenGodLabels[god]} (${tenGodInsights[god]})`).join("; ")
     : "Ten Gods are less defined when the birth hour is unknown.";
   const lowText = lowElements.length ? lowElements.map((element) => elementNames[element]).join(" and ") : "no single missing element";
 
   return {
-    personality: `The Day Master is ${bazi.pillars.day.label}, carried by ${elementNames[dayElement]}. This is the core self: how the person restores energy, makes decisions and protects personal standards. The visible chart is led by ${topElements.map((element) => elementNames[element]).join(" and ")}, so the self-expression should be read through that elemental atmosphere rather than through the day pillar alone.`,
-    money: `The Month pillar ${bazi.pillars.month.label} holds the seasonal command, with ${elementNames[monthElement]} setting the strongest environmental qi. Month command shows the world the person was born into: pressure, resources, timing and social rhythm. When the month element supports the Day Master, life tends to feel resourced; when it controls or drains it, discipline and recovery become central.`,
-    love: `${patternText} The most visible Ten Gods are ${topGodText}. Together they describe the main operating style of the chart: how desire, responsibility, creativity, resources and pressure move through the person before any jewellery recommendation is made.`,
-    wealth: `For this Day Master, the wealth star is connected with ${elementNames[wealthElement]}, while authority and career pressure are connected with ${elementNames[authorityElement]}. If these appear strongly, money and work respond to structure, commitments and measurable value. If they are quieter, wealth is built better through the recommended balancing element, ${elementNames[recommendedElement]}, rather than force or over-extension.`,
+    personality: `The Day Master is ${bazi.pillars.day.label}, carried by ${elementNames[dayElement]}. This is the core self: how the person restores energy, makes decisions and protects personal standards. The chart is assessed as ${strength.level}, with support score ${strength.supportScore.toFixed(1)} and pressure/release score ${strength.pressureScore.toFixed(1)}. This is why ${elementNames[recommendedElement]} is selected as the Useful God rather than simply following the strongest element.`,
+    money: `The Month pillar ${bazi.pillars.month.label} holds the seasonal command, with ${elementNames[monthElement]} setting the strongest environmental qi. Money is read through the wealth star, ${elementNames[wealthElement]}, and through whether the Day Master has enough strength to manage it. When the chart is weak, ${elementNames[resourceElement]} resource should come before wealth pressure; when strong, wealth becomes a useful channel for measurable value.`,
+    love: `${patternText} The most visible Ten Gods are ${topGodText}. Output is ${elementNames[outputElement]}, resource is ${elementNames[resourceElement]}, wealth is ${elementNames[wealthElement]}, and authority is ${elementNames[authorityElement]}. Together they describe how desire, responsibility, creativity, resources and pressure move through the person before any jewellery recommendation is made.`,
+    wealth: `For this Day Master, the wealth star is connected with ${elementNames[wealthElement]}, while authority and career pressure are connected with ${elementNames[authorityElement]}. The favourable direction is ${elementNames[recommendedElement]} and the assisting direction is ${elementNames[bazi.xiShen]}. Jewellery should therefore emphasize ${elementJewelleryDirections[recommendedElement]}`,
     career: `Relationship tone is read from the balance between self-star, wealth-star, authority-star and expression-star. Here, ${topGodText} suggests that closeness works best when the person is not rushed into a role too quickly. Clear boundaries, sincere language and consistent action matter more than dramatic intensity.`,
     health: `Health rhythm is read through elemental excess and absence. The chart currently emphasizes ${topElements.map((element) => elementNames[element]).join(" and ")}; the quieter area is ${lowText}. This points to a need for balanced routine: sleep, digestion, circulation, hydration and stress release should be adjusted according to the elements that are either too loud or too quiet.`
   };
@@ -502,9 +634,7 @@ function getCoreBazi(dateValue, timeValue) {
         branchElement: branchElements[earthlyBranches.indexOf(eightChar.getTimeZhi())]
       };
     }
-    const counts = buildElementCounts(pillars);
-    const dominant = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
-    return { pillars, dominant, elementCounts: counts, tenGodCounts: buildTenGodCounts(pillars) };
+    return completeBaziResult(pillars);
   }
 
   const date = new Date(`${dateValue}T12:00:00`);
@@ -531,9 +661,7 @@ function getCoreBazi(dateValue, timeValue) {
     const hourStemIndex = mod((dayStemIndex % 5) * 2 + hourBranchIndex, 10);
     pillars.hour = getPillar(hourStemIndex, hourBranchIndex);
   }
-  const counts = buildElementCounts(pillars);
-  const dominant = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
-  return { pillars, dominant, elementCounts: counts, tenGodCounts: buildTenGodCounts(pillars) };
+  return completeBaziResult(pillars);
 }
 
 const countrySelect = document.querySelector("#birth-country");
@@ -621,21 +749,21 @@ if (elementForm) elementForm.addEventListener("submit", (event) => {
   const birthplace = `${birthRegion}, ${birthCountry}`;
 
   const bazi = getCoreBazi(birthday, birthtime);
-  const element = supportCycle[bazi.dominant];
+  const element = bazi.yongShen;
   const profile = profiles[element];
   const detailedReading = getDetailedBirthReading(bazi, element);
-  document.querySelector("#result-kicker").textContent = `Core BaZi reading / ${elementNames[element]} recommendation`;
-  document.querySelector("#result-title").textContent = profile.title;
-  document.querySelector("#result-copy").textContent = `Your core BaZi shows a ${elementNames[bazi.dominant]} dominant note. The jewellery direction below balances that reading with a ${elementNames[element]} composition.`;
+  document.querySelector("#result-kicker").textContent = `Core BaZi reading / ${bazi.strength.level}`;
+  document.querySelector("#result-title").textContent = `Useful God recommendation: ${elementNames[element]}`;
+  document.querySelector("#result-copy").textContent = `${bazi.strength.reason} The bracelet direction below follows the Useful God first and the favourable assisting element, ${elementNames[bazi.xiShen]}, second.`;
   document.querySelector("#bazi-year").textContent = bazi.pillars.year.label;
   document.querySelector("#bazi-month").textContent = bazi.pillars.month.label;
   document.querySelector("#bazi-day").textContent = bazi.pillars.day.label;
   document.querySelector("#bazi-hour").textContent = bazi.pillars.hour ? bazi.pillars.hour.label : "Unknown";
-  document.querySelector("#bazi-dominant").textContent = elementNames[bazi.dominant];
+  document.querySelector("#bazi-dominant").textContent = elementNames[bazi.yongShen];
   const timeNote = birthtime === "unknown" ? "unknown birth hour" : birthtime;
   document.querySelector("#bazi-note").textContent = `Calculated from ${birthday}, ${timeNote}, ${birthplace}. Simplified BaZi for jewellery guidance; location is displayed for context and not converted to true solar time.`;
-  document.querySelector("#bazi-pattern").textContent = getPatternReading(bazi);
-  document.querySelector("#element-cycle-copy").textContent = `${elementNames[bazi.dominant]} is the strongest visible note. In the generating cycle it nourishes ${elementNames[supportCycle[bazi.dominant]]}; in the controlling cycle it regulates ${elementNames[controlCycle[bazi.dominant]]}. The recommended ${elementNames[element]} direction is chosen to soften dominance and give the bracelet a more balanced symbolic composition.`;
+  document.querySelector("#bazi-pattern").textContent = `${getPatternReading(bazi)} ${bazi.strength.reason}`;
+  document.querySelector("#element-cycle-copy").textContent = `${elementNames[bazi.dominant]} is the strongest visible note, while ${elementNames[bazi.yongShen]} is the Useful God selected from the Day Master strength. In the generating cycle it nourishes ${elementNames[supportCycle[bazi.yongShen]]}; in the controlling cycle it regulates ${elementNames[controlCycle[bazi.yongShen]]}. The recommended bracelet uses ${elementNames[element]} to correct the chart's practical balance, not just to match the dominant colour.`;
   renderRatioBars(document.querySelector("#element-bars"), bazi.elementCounts, elementNames, elementOrder);
   renderElementMeanings(document.querySelector("#element-meanings"));
   document.querySelector("#bazi-strength-summary").textContent = getChartStrengthSummary(bazi);
@@ -647,7 +775,7 @@ if (elementForm) elementForm.addEventListener("submit", (event) => {
   document.querySelector("#bazi-wealth").textContent = detailedReading.wealth;
   document.querySelector("#bazi-career").textContent = detailedReading.career;
   document.querySelector("#bazi-health").textContent = detailedReading.health;
-  document.querySelector("#result-materials").textContent = profile.materials;
+  document.querySelector("#result-materials").textContent = `${profile.materials} ${elementJewelleryDirections[element]}`;
   document.querySelector("#result-visual").className = `product-visual ${profile.className}`;
   const resultProductLink = document.querySelector("#result-product-link");
   if (resultProductLink) resultProductLink.href = `product.html?product=${profile.productSlug}`;
