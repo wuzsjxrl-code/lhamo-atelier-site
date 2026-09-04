@@ -197,6 +197,20 @@ small,
 .bazi-grid p {
   color: var(--muted);
 }
+#result-copy {
+  display: grid;
+  gap: 10px;
+}
+.useful-god-highlight {
+  display: block;
+  width: fit-content;
+  padding: 7px 10px;
+  color: var(--ink);
+  background: #f2f2f2;
+  border-left: 3px solid var(--ink);
+  font-size: 15px;
+  line-height: 1.35;
+}
 .panel-copy p:not(.meta) {
   margin: 20px 0 28px;
   font-size: 16px;
@@ -489,7 +503,7 @@ small {
 }
 .bazi-pillars {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   border: 1px solid var(--line);
 }
 .bazi-pillars span {

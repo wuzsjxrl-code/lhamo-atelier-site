@@ -550,6 +550,35 @@ function analyseDayMasterStrength(pillars, counts) {
   };
 }
 
+function getUsefulGodReason(bazi) {
+  const strength = bazi.strength;
+  const yong = elementNames[bazi.yongShen];
+  const xi = elementNames[bazi.xiShen];
+  const lowElements = getLowestKeys(bazi.elementCounts, 2).map((element) => elementNames[element]).join(" and ");
+  const avoidText = strength.avoidElements.map((element) => elementNames[element]).join(", ");
+  if (strength.level.includes("Weak")) {
+    return `Why: the Day Master is weak because supporting qi is lighter than pressure, wealth and output. The first Useful God, ${yong}, replenishes the Day Master; the second Useful God, ${xi}, adds direct self-support. The chart should avoid adding too much ${avoidText}.`;
+  }
+  if (strength.level.includes("Strong")) {
+    return `Why: the Day Master is strong, so the chart does not need more resource or same-element support. The first Useful God, ${yong}, releases and shapes excess qi; the second Useful God, ${xi}, helps the energy move toward value, order and practical expression. The quieter visible elements are ${lowElements}.`;
+  }
+  return `Why: the Day Master is close to balanced, so the recommendation gives priority to the quieter balancing note. The first Useful God, ${yong}, fills the most useful gap; the second Useful God, ${xi}, keeps the chart from becoming one-sided. The quieter visible elements are ${lowElements}.`;
+}
+
+function renderUsefulGodIntro(container, bazi) {
+  if (!container) return;
+  container.innerHTML = "";
+  const first = document.createElement("strong");
+  first.className = "useful-god-highlight";
+  first.textContent = `First Useful God / \u7b2c\u4e00\u559c\u7528\u795e: ${elementNames[bazi.yongShen]}`;
+  const second = document.createElement("strong");
+  second.className = "useful-god-highlight";
+  second.textContent = `Second Useful God / \u7b2c\u4e8c\u559c\u7528\u795e: ${elementNames[bazi.xiShen]}`;
+  const reason = document.createElement("span");
+  reason.textContent = getUsefulGodReason(bazi);
+  container.append(first, second, reason);
+}
+
 function completeBaziResult(pillars) {
   const counts = buildElementCounts(pillars);
   const dominant = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
@@ -754,12 +783,11 @@ if (elementForm) elementForm.addEventListener("submit", (event) => {
   const detailedReading = getDetailedBirthReading(bazi, element);
   document.querySelector("#result-kicker").textContent = `Core BaZi reading / ${bazi.strength.level}`;
   document.querySelector("#result-title").textContent = `Useful God recommendation: ${elementNames[element]}`;
-  document.querySelector("#result-copy").textContent = `${bazi.strength.reason} The bracelet direction below follows the Useful God first and the favourable assisting element, ${elementNames[bazi.xiShen]}, second.`;
   document.querySelector("#bazi-year").textContent = bazi.pillars.year.label;
   document.querySelector("#bazi-month").textContent = bazi.pillars.month.label;
   document.querySelector("#bazi-day").textContent = bazi.pillars.day.label;
   document.querySelector("#bazi-hour").textContent = bazi.pillars.hour ? bazi.pillars.hour.label : "Unknown";
-  document.querySelector("#bazi-dominant").textContent = elementNames[bazi.yongShen];
+  renderUsefulGodIntro(document.querySelector("#result-copy"), bazi);
   const timeNote = birthtime === "unknown" ? "unknown birth hour" : birthtime;
   document.querySelector("#bazi-note").textContent = `Calculated from ${birthday}, ${timeNote}, ${birthplace}. Simplified BaZi for jewellery guidance; location is displayed for context and not converted to true solar time.`;
   document.querySelector("#bazi-pattern").textContent = `${getPatternReading(bazi)} ${bazi.strength.reason}`;
