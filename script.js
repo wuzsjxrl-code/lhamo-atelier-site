@@ -169,6 +169,24 @@ const branchHiddenStems = {
   "\u620c": ["\u620a", "\u8f9b", "\u4e01"],
   "\u4ea5": ["\u58ec", "\u7532"]
 };
+const stemCombinations = ["\u7532\u5df1", "\u4e59\u5e9a", "\u4e19\u8f9b", "\u4e01\u58ec", "\u620a\u7678"];
+const branchCombinations = ["\u5b50\u4e11", "\u5bc5\u4ea5", "\u536f\u620c", "\u8fb0\u9149", "\u5df3\u7533", "\u5348\u672a"];
+const branchClashes = ["\u5b50\u5348", "\u4e11\u672a", "\u5bc5\u7533", "\u536f\u9149", "\u8fb0\u620c", "\u5df3\u4ea5"];
+const branchHarms = ["\u5b50\u672a", "\u4e11\u5348", "\u5bc5\u5df3", "\u536f\u8fb0", "\u7533\u4ea5", "\u9149\u620c"];
+const seasonalClimate = {
+  "\u4ea5": { temperature: -2, moisture: 2 },
+  "\u5b50": { temperature: -3, moisture: 2 },
+  "\u4e11": { temperature: -2, moisture: 1 },
+  "\u5bc5": { temperature: -1, moisture: 0 },
+  "\u536f": { temperature: 0, moisture: 1 },
+  "\u8fb0": { temperature: 0, moisture: 2 },
+  "\u5df3": { temperature: 2, moisture: -1 },
+  "\u5348": { temperature: 3, moisture: -2 },
+  "\u672a": { temperature: 2, moisture: -2 },
+  "\u7533": { temperature: 1, moisture: -1 },
+  "\u9149": { temperature: 0, moisture: -2 },
+  "\u620c": { temperature: -1, moisture: -3 }
+};
 const tenGodLabels = {
   "\u6bd4\u80a9": "Peer / \u6bd4\u80a9",
   "\u52ab\u8d22": "Rob wealth / \u52ab\u8d22",
@@ -484,6 +502,104 @@ function getWeightedElementSignals(pillars) {
   return signals;
 }
 
+function hasPair(values, pairs, first, second) {
+  return pairs.includes(`${first}${second}`) || pairs.includes(`${second}${first}`);
+}
+
+function analyseChartInteractions(pillars) {
+  const entries = Object.entries(pillars);
+  const interactions = [];
+  const damagedBranches = new Set();
+  const combinedStems = new Set();
+  entries.forEach(([firstKey, first], firstIndex) => {
+    entries.slice(firstIndex + 1).forEach(([secondKey, second]) => {
+      if (hasPair(heavenlyStems, stemCombinations, first.stem, second.stem)) {
+        combinedStems.add(first.stem);
+        combinedStems.add(second.stem);
+        interactions.push(`${first.stem}${second.stem} combine (${firstKey}-${secondKey})`);
+      }
+      if (hasPair(earthlyBranches, branchCombinations, first.branch, second.branch)) {
+        interactions.push(`${first.branch}${second.branch} combine (${firstKey}-${secondKey})`);
+      }
+      if (hasPair(earthlyBranches, branchClashes, first.branch, second.branch)) {
+        damagedBranches.add(first.branch);
+        damagedBranches.add(second.branch);
+        interactions.push(`${first.branch}${second.branch} clash (${firstKey}-${secondKey})`);
+      }
+      if (hasPair(earthlyBranches, branchHarms, first.branch, second.branch)) {
+        damagedBranches.add(first.branch);
+        damagedBranches.add(second.branch);
+        interactions.push(`${first.branch}${second.branch} harm (${firstKey}-${secondKey})`);
+      }
+    });
+  });
+  const branches = entries.map(([, pillar]) => pillar.branch);
+  [["\u5bc5", "\u5df3", "\u7533"], ["\u4e11", "\u672a", "\u620c"]].forEach((group) => {
+    if (group.every((branch) => branches.includes(branch))) {
+      group.forEach((branch) => damagedBranches.add(branch));
+      interactions.push(`${group.join("")} punishment`);
+    }
+  });
+  ["\u8fb0", "\u5348", "\u9149", "\u4ea5"].forEach((branch) => {
+    if (branches.filter((item) => item === branch).length > 1) {
+      damagedBranches.add(branch);
+      interactions.push(`${branch}${branch} self-punishment`);
+    }
+  });
+  return { interactions, damagedBranches, combinedStems };
+}
+
+function getClimateAnalysis(pillars, energies) {
+  const monthClimate = seasonalClimate[pillars.month.branch] || { temperature: 0, moisture: 0 };
+  const temperature = monthClimate.temperature + (energies.Fire - energies.Water) * 0.18;
+  const moisture = monthClimate.moisture + (energies.Water - energies.Fire - energies.Metal * 0.25) * 0.14;
+  const needs = [];
+  if (temperature <= -1.6) needs.push({ element: "Fire", reason: "warm a cold chart", weight: 4.3 });
+  if (temperature >= 1.8) needs.push({ element: "Water", reason: "cool an overheated chart", weight: 4.3 });
+  if (moisture <= -1.6) needs.push({ element: "Water", reason: "moisten an overly dry chart", weight: 3.2 });
+  if (moisture >= 1.8) needs.push({ element: "Fire", reason: "dry and circulate excess dampness", weight: 3.2 });
+  const temperatureLabel = temperature <= -1.6 ? "cold" : temperature >= 1.8 ? "hot" : "temperate";
+  const moistureLabel = moisture <= -1.6 ? "dry" : moisture >= 1.8 ? "damp" : "moderate in moisture";
+  return { temperature, moisture, needs, label: `${temperatureLabel} and ${moistureLabel}` };
+}
+
+function evaluateElementFunction(element, pillars, energies, mainImbalance, climate, interactions, dayMasterState) {
+  const roots = Object.values(pillars).filter((pillar) =>
+    (branchHiddenStems[pillar.branch] || []).some((stem) => getStemElement(stem) === element)
+  );
+  const visibleStems = Object.values(pillars).filter((pillar) => pillar.stemElement === element);
+  const producer = getElementThatGenerates(element);
+  const controller = getElementByControlTarget(element);
+  const climateNeed = climate.needs.find((need) => need.element === element);
+  const controlsImbalance = controlCycle[element] === mainImbalance;
+  const drainsImbalance = supportCycle[mainImbalance] === element;
+  const damagedRoots = roots.filter((pillar) => interactions.damagedBranches.has(pillar.branch)).length;
+  const combinedVisible = visibleStems.filter((pillar) => interactions.combinedStems.has(pillar.stem)).length;
+  const dayRelation = getElementRelation(pillars.day.stemElement, element);
+  let score = energies[element] * 0.32 + roots.length * 0.85 + visibleStems.length * 0.55 + energies[producer] * 0.18;
+  if (controlsImbalance) score += 3;
+  if (drainsImbalance) score += 2.4;
+  if (climateNeed) score += climateNeed.weight;
+  if (dayMasterState === "weak") {
+    score += { resource: 2.4, companion: 1.5, output: -1.4, wealth: -2.1, officer: -3.1, mixed: 0 }[dayRelation] || 0;
+  } else if (dayMasterState === "strong") {
+    score += { resource: -1, companion: -1.2, output: 1.8, wealth: 1.35, officer: 0.7, mixed: 0 }[dayRelation] || 0;
+  }
+  score -= damagedRoots * 0.8 + combinedVisible * 0.55 + Math.max(0, energies[controller] - energies[element]) * 0.2;
+  const hasQi = energies[element] >= 0.6;
+  const canAct = (hasQi || roots.length || visibleStems.length) && damagedRoots < Math.max(1, roots.length + visibleStems.length);
+  const status = !hasQi && !roots.length && !visibleStems.length
+    ? "absent from the original chart"
+    : !canAct
+      ? "present but heavily damaged or restrained"
+      : damagedRoots || combinedVisible
+        ? "present and usable, though partly weakened by combination, clash or harm"
+        : roots.length && (visibleStems.length || energies[producer] >= 1)
+          ? "rooted, supported and able to act"
+          : "present with limited support";
+  return { element, score, roots: roots.length, visible: visibleStems.length, damagedRoots, combinedVisible, hasQi, canAct, controlsImbalance, drainsImbalance, climateNeed, dayRelation, status };
+}
+
 function analyseDayMasterStrength(pillars, counts) {
   const dayElement = pillars.day.stemElement;
   const producerElement = getElementThatGenerates(dayElement);
@@ -506,25 +622,37 @@ function analyseDayMasterStrength(pillars, counts) {
   const level = score >= 2.2 ? "Strong Day Master / \u8eab\u5f3a" : score <= -1.2 ? "Weak Day Master / \u8eab\u5f31" : "Balanced Day Master / \u4e2d\u548c";
   const isStrong = score >= 2.2;
   const isWeak = score <= -1.2;
-  let yongShen = outputElement;
-  let xiShen = wealthElement;
-  let avoidElements = [dayElement, producerElement];
-
-  if (isWeak) {
-    yongShen = producerElement;
-    xiShen = dayElement;
-    avoidElements = [wealthElement, officerElement, outputElement];
-  } else if (isStrong) {
-    const outputIsCrowded = (counts[outputElement] || 0) >= 3;
-    yongShen = outputIsCrowded ? wealthElement : outputElement;
-    xiShen = outputIsCrowded ? officerElement : wealthElement;
-    avoidElements = [dayElement, producerElement];
-  } else {
-    const candidateElements = [producerElement, outputElement, wealthElement, officerElement, dayElement];
-    yongShen = candidateElements.sort((a, b) => (counts[a] || 0) - (counts[b] || 0))[0] || outputElement;
-    xiShen = yongShen === producerElement ? dayElement : wealthElement;
-    avoidElements = getTopKeys(counts, 2);
-  }
+  const energies = elementOrder.reduce((memo, element) => ({ ...memo, [element]: 0 }), {});
+  signals.forEach((signal) => { energies[signal.element] += signal.weight; });
+  const climate = getClimateAnalysis(pillars, energies);
+  const interactions = analyseChartInteractions(pillars);
+  const imbalanceScores = elementOrder.reduce((memo, element) => {
+    const climateAggravation = climate.temperature <= -1.6 && element === "Water"
+      || climate.temperature >= 1.8 && element === "Fire"
+      || climate.moisture <= -1.6 && ["Fire", "Metal"].includes(element)
+      || climate.moisture >= 1.8 && ["Water", "Earth"].includes(element) ? 2.2 : 0;
+    const relationAggravation = isWeak && [outputElement, wealthElement, officerElement].includes(element)
+      || isStrong && [dayElement, producerElement].includes(element) ? 1.5 : 0;
+    memo[element] = energies[element] + climateAggravation + relationAggravation;
+    return memo;
+  }, {});
+  const mainImbalance = getTopKeys(imbalanceScores, 1)[0] || dayElement;
+  const dayMasterState = isWeak ? "weak" : isStrong ? "strong" : "balanced";
+  const evaluations = elementOrder.map((element) => evaluateElementFunction(element, pillars, energies, mainImbalance, climate, interactions, dayMasterState));
+  const validCandidates = evaluations.filter((item) => item.element !== mainImbalance && item.canAct).sort((a, b) => b.score - a.score);
+  const yongEvaluation = validCandidates[0] || evaluations.filter((item) => item.element !== mainImbalance).sort((a, b) => b.score - a.score)[0];
+  const yongShen = yongEvaluation?.element || outputElement;
+  const assistingOrder = [getElementThatGenerates(yongShen), supportCycle[yongShen]];
+  const xiEvaluation = validCandidates.find((item) => item.element !== yongShen && assistingOrder.includes(item.element))
+    || validCandidates.find((item) => item.element !== yongShen)
+    || evaluations.filter((item) => ![mainImbalance, yongShen].includes(item.element)).sort((a, b) => b.score - a.score)[0];
+  const xiShen = xiEvaluation?.element || elementOrder.find((element) => ![mainImbalance, yongShen].includes(element));
+  const mainImbalanceControlled = evaluations.some((item) => item.element !== mainImbalance && item.canAct && (item.controlsImbalance || item.drainsImbalance));
+  const avoidElements = [mainImbalance];
+  const secondaryImbalance = Object.keys(imbalanceScores)
+    .filter((element) => ![mainImbalance, yongShen, xiShen].includes(element))
+    .sort((a, b) => imbalanceScores[b] - imbalanceScores[a])[0];
+  if (secondaryImbalance && imbalanceScores[secondaryImbalance] >= imbalanceScores[mainImbalance] * 0.78) avoidElements.push(secondaryImbalance);
 
   const supportScore = signals
     .filter((signal) => ["companion", "resource"].includes(getElementRelation(dayElement, signal.element)))
@@ -542,34 +670,14 @@ function analyseDayMasterStrength(pillars, counts) {
     avoidElements,
     supportScore,
     pressureScore,
-    reason: isWeak
-      ? `The Day Master is under-supported: resource and same-element qi are lighter than output, wealth and officer pressure. Useful God is ${elementNames[yongShen]} to nourish and restore the self.`
-      : isStrong
-        ? `The Day Master has enough root and support. Useful God is ${elementNames[yongShen]} to release, shape and circulate the chart rather than adding more self-support.`
-        : `The Day Master is relatively balanced. Useful God is ${elementNames[yongShen]} because it is one of the quieter balancing notes in this chart.`
+    energies,
+    climate,
+    interactions,
+    evaluations,
+    mainImbalance,
+    mainImbalanceControlled,
+    reason: `The month command makes the chart ${climate.label}. ${elementNames[mainImbalance]} is the main imbalancing force and is ${mainImbalanceControlled ? "already partly controlled or drained" : "not effectively controlled"}. ${elementNames[yongShen]} is selected because it is ${yongEvaluation?.status || "the strongest functional candidate"}${yongEvaluation?.controlsImbalance ? ", directly controls the main imbalance" : ""}${yongEvaluation?.drainsImbalance ? ", drains the main imbalance through the generating route" : ""}${yongEvaluation?.climateNeed ? `, and helps ${yongEvaluation.climateNeed.reason}` : ""}.`
   };
-}
-
-function getUsefulGodReason(bazi) {
-  const strength = bazi.strength;
-  const yong = elementNames[bazi.yongShen];
-  const xi = elementNames[bazi.xiShen];
-  const dayPillar = bazi.pillars.day.label;
-  const strengthType = strength.level.includes("Weak") ? "a Weak Day Master" : strength.level.includes("Strong") ? "a Strong Day Master" : "a Balanced Day Master";
-  const dayElement = elementNames[strength.dayElement];
-  const outputElement = elementNames[supportCycle[strength.dayElement]];
-  const wealthElement = elementNames[controlCycle[strength.dayElement]];
-  const resourceElement = elementNames[getElementThatGenerates(strength.dayElement)];
-  const companionElement = dayElement;
-  const lowElements = getLowestKeys(bazi.elementCounts, 2).map((element) => elementNames[element]).join(" and ");
-  const avoidText = strength.avoidElements.map((element) => elementNames[element]).join(" and ");
-  if (strength.level.includes("Weak")) {
-    return `The chart owner's Day Pillar is ${dayPillar}. The Day Master element is ${dayElement}, which makes this chart ${strengthType}. Because the Day Master is weak, the chart needs more ${resourceElement} as resource support and more ${companionElement} as same-element root before wealth, career pressure and outward expression can be carried well. This is why ${yong} is the first Useful God and ${xi} is the second Useful God. Working with these Useful Gods can strengthen steadiness, recovery and self-support while reducing the drain created by too much ${avoidText}.`;
-  }
-  if (strength.level.includes("Strong")) {
-    return `The chart owner's Day Pillar is ${dayPillar}. The Day Master element is ${dayElement}, which makes this chart ${strengthType}. Because the Day Master is strong, the chart does not need more ${resourceElement} or ${companionElement}; it needs ${outputElement} to release and refine excess qi, and ${wealthElement} to direct that energy toward value, results and practical decisions. This is why ${yong} is the first Useful God and ${xi} is the second Useful God. Working with these Useful Gods can turn strong self-energy into taste, action, material judgment and a clearer sense of order.`;
-  }
-  return `The chart owner's Day Pillar is ${dayPillar}. The Day Master element is ${dayElement}, which makes this chart ${strengthType}. Because the chart is already close to balanced, it does not need a heavy increase of one single element; it benefits from adding the quieter elements that help the qi move smoothly. The less visible elements here are ${lowElements}, so ${yong} is the first Useful God and ${xi} is the second Useful God. Working with these Useful Gods can add clarity in expression, action, resources or wealth direction without disturbing the chart's original stability.`;
 }
 
 function getElementRoleInChart(bazi, element) {
@@ -600,9 +708,11 @@ function getGodChartMeaning(bazi, type, elements) {
     return `For this chart, ${names} is the first adjustment because ${bazi.strength.reason.charAt(0).toLowerCase()}${bazi.strength.reason.slice(1)} ${roles}`;
   }
   if (type === "xi") {
-    return `For this chart, ${names} assists the Useful God and provides a secondary route back to balance. ${roles}`;
+    const evaluation = bazi.strength.evaluations.find((item) => item.element === elements[0]);
+    return `For this chart, ${names} assists the Useful God and provides a secondary route back to balance. Its current state is ${evaluation?.status || "supportive"}. ${roles}`;
   }
-  return `For this chart, too much ${names} would reinforce the side that is already over-supported or increase pressure on the Day Master. ${roles}`;
+  const controlled = bazi.strength.mainImbalanceControlled ? "The main unfavourable force is already partly restrained, so activating it is not automatically negative while that restraint remains intact." : "The main unfavourable force lacks an effective restraint, so further support would enlarge the existing imbalance.";
+  return `For this chart, too much ${names} would reinforce the main imbalance or increase pressure on the Day Master. ${controlled} ${roles}`;
 }
 
 function createGodPanel(type, title, elements, bazi) {
@@ -676,10 +786,10 @@ function getDetailedBirthReading(bazi, recommendedElement) {
   const lowText = lowElements.length ? lowElements.map((element) => elementNames[element]).join(" and ") : "no single missing element";
 
   return {
-    personality: `The Day Master is ${bazi.pillars.day.label}, carried by ${elementNames[dayElement]}. This is the core self: how the person restores energy, makes decisions and protects personal standards. The chart is assessed as ${strength.level}, with support score ${strength.supportScore.toFixed(1)} and pressure/release score ${strength.pressureScore.toFixed(1)}. This is why ${elementNames[recommendedElement]} is selected as the Useful God rather than simply following the strongest element.`,
+    personality: `The Day Master is ${bazi.pillars.day.label}, carried by ${elementNames[dayElement]}. This is the core self: how the person restores energy, makes decisions and protects personal standards. The chart is assessed as ${strength.level}, with support score ${strength.supportScore.toFixed(1)} and pressure/release score ${strength.pressureScore.toFixed(1)}. The month command makes the original chart ${strength.climate.label}; ${elementNames[strength.mainImbalance]} is the principal imbalance. ${elementNames[recommendedElement]} is selected only after checking its root, visible qi, support and ability to control or drain that imbalance.`,
     money: `The Month pillar ${bazi.pillars.month.label} holds the seasonal command, with ${elementNames[monthElement]} setting the strongest environmental qi. Money is read through the wealth star, ${elementNames[wealthElement]}, and through whether the Day Master has enough strength to manage it. When the chart is weak, ${elementNames[resourceElement]} resource should come before wealth pressure; when strong, wealth becomes a useful channel for measurable value.`,
     love: `${patternText} The most visible Ten Gods are ${topGodText}. Output is ${elementNames[outputElement]}, resource is ${elementNames[resourceElement]}, wealth is ${elementNames[wealthElement]}, and authority is ${elementNames[authorityElement]}. Together they describe how desire, responsibility, creativity, resources and pressure move through the person before any jewellery recommendation is made.`,
-    wealth: `For this Day Master, the wealth star is connected with ${elementNames[wealthElement]}, while authority and career pressure are connected with ${elementNames[authorityElement]}. The favourable direction is ${elementNames[recommendedElement]} and the assisting direction is ${elementNames[bazi.xiShen]}. Jewellery should therefore emphasize ${elementJewelleryDirections[recommendedElement]}`,
+    wealth: `For this Day Master, the wealth star is connected with ${elementNames[wealthElement]}, while authority and career pressure are connected with ${elementNames[authorityElement]}. These Ten God names describe relationships, not automatic fortune or misfortune. In the actual original chart, the functional direction is ${elementNames[recommendedElement]} and the assisting direction is ${elementNames[bazi.xiShen]}. Jewellery should therefore emphasize ${elementJewelleryDirections[recommendedElement]}`,
     career: `Relationship tone is read from the balance between self-star, wealth-star, authority-star and expression-star. Here, ${topGodText} suggests that closeness works best when the person is not rushed into a role too quickly. Clear boundaries, sincere language and consistent action matter more than dramatic intensity.`,
     health: `Health rhythm is read through elemental excess and absence. The chart currently emphasizes ${topElements.map((element) => elementNames[element]).join(" and ")}; the quieter area is ${lowText}. This points to a need for balanced routine: sleep, digestion, circulation, hydration and stress release should be adjusted according to the elements that are either too loud or too quiet.`
   };
