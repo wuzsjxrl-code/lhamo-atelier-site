@@ -557,26 +557,45 @@ function getUsefulGodReason(bazi) {
   const lowElements = getLowestKeys(bazi.elementCounts, 2).map((element) => elementNames[element]).join(" and ");
   const avoidText = strength.avoidElements.map((element) => elementNames[element]).join(", ");
   if (strength.level.includes("Weak")) {
-    return `Why: the Day Master is weak because supporting qi is lighter than pressure, wealth and output. The first Useful God, ${yong}, replenishes the Day Master; the second Useful God, ${xi}, adds direct self-support. The chart should avoid adding too much ${avoidText}.`;
+    return `Why this chart needs it: the Day Master is weak because supporting qi is lighter than pressure, wealth and output. ${yong} replenishes the Day Master first; ${xi} adds direct self-support. The chart should avoid adding too much ${avoidText}.`;
   }
   if (strength.level.includes("Strong")) {
-    return `Why: the Day Master is strong, so the chart does not need more resource or same-element support. The first Useful God, ${yong}, releases and shapes excess qi; the second Useful God, ${xi}, helps the energy move toward value, order and practical expression. The quieter visible elements are ${lowElements}.`;
+    return `Why this chart needs it: the Day Master is strong, so the chart does not need more resource or same-element support. ${yong} releases and shapes excess qi; ${xi} helps the energy move toward value, order and practical expression. The quieter visible elements are ${lowElements}.`;
   }
-  return `Why: the Day Master is close to balanced, so the recommendation gives priority to the quieter balancing note. The first Useful God, ${yong}, fills the most useful gap; the second Useful God, ${xi}, keeps the chart from becoming one-sided. The quieter visible elements are ${lowElements}.`;
+  return `Why this chart needs it: the Day Master is close to balanced, so the recommendation gives priority to the quieter balancing note. ${yong} fills the most useful gap; ${xi} keeps the chart from becoming one-sided. The quieter visible elements are ${lowElements}.`;
+}
+
+function getElementRoleInChart(bazi, element) {
+  const relation = getElementRelation(bazi.strength.dayElement, element);
+  const roles = {
+    companion: "same-element qi / \u6bd4\u52ab, representing root, self-trust, stamina and the ability to hold one's own direction.",
+    resource: "resource qi / \u5370\u661f, representing learning, protection, recovery, mentors and inner stability.",
+    output: "output qi / \u98df\u4f24, representing expression, aesthetic taste, craft, communication and the ability to circulate talent outward.",
+    wealth: "wealth qi / \u8d22\u661f, representing value, trade, material judgment, generosity and the ability to turn effort into tangible assets.",
+    officer: "authority qi / \u5b98\u6740, representing discipline, responsibility, structure, public credibility and the pressure that gives form to ambition."
+  };
+  return `${elementNames[element]} acts as ${roles[relation] || "a balancing qi in the chart."}`;
 }
 
 function renderUsefulGodIntro(container, bazi) {
   if (!container) return;
   container.innerHTML = "";
+  const label = document.createElement("span");
+  label.className = "useful-god-label";
+  label.textContent = "\u559c\u7528\u795e / Useful God";
   const first = document.createElement("strong");
-  first.className = "useful-god-highlight";
-  first.textContent = `First Useful God / \u7b2c\u4e00\u559c\u7528\u795e: ${elementNames[bazi.yongShen]}`;
-  const second = document.createElement("strong");
-  second.className = "useful-god-highlight";
-  second.textContent = `Second Useful God / \u7b2c\u4e8c\u559c\u7528\u795e: ${elementNames[bazi.xiShen]}`;
+  first.className = "useful-god-major";
+  first.textContent = elementNames[bazi.yongShen];
+  const second = document.createElement("span");
+  second.className = "useful-god-secondary";
+  second.textContent = `Second support / \u7b2c\u4e8c\u559c\u7528\u795e: ${elementNames[bazi.xiShen]}`;
+  const role = document.createElement("span");
+  role.className = "useful-god-role";
+  role.textContent = getElementRoleInChart(bazi, bazi.yongShen);
   const reason = document.createElement("span");
+  reason.className = "useful-god-reason";
   reason.textContent = getUsefulGodReason(bazi);
-  container.append(first, second, reason);
+  container.append(label, first, second, role, reason);
 }
 
 function completeBaziResult(pillars) {
@@ -782,7 +801,7 @@ if (elementForm) elementForm.addEventListener("submit", (event) => {
   const profile = profiles[element];
   const detailedReading = getDetailedBirthReading(bazi, element);
   document.querySelector("#result-kicker").textContent = `Core BaZi reading / ${bazi.strength.level}`;
-  document.querySelector("#result-title").textContent = `Useful God recommendation: ${elementNames[element]}`;
+  document.querySelector("#result-title").textContent = "BaZi jewellery direction";
   document.querySelector("#bazi-year").textContent = bazi.pillars.year.label;
   document.querySelector("#bazi-month").textContent = bazi.pillars.month.label;
   document.querySelector("#bazi-day").textContent = bazi.pillars.day.label;
