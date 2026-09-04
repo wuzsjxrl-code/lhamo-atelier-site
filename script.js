@@ -584,25 +584,59 @@ function getElementRoleInChart(bazi, element) {
   return `In this BaZi chart, ${elementNames[element]} functions as ${roles[relation] || "a balancing element that helps the chart return to a smoother state."}`;
 }
 
+function getGodMeaning(type) {
+  const meanings = {
+    yong: "The Useful God is the primary balancing element. It addresses the chart's central imbalance and gives the other energies a more workable direction.",
+    xi: "The Favourable God supports the Useful God. It reinforces the main adjustment and helps that beneficial effect remain steady in daily life.",
+    ji: "The Unfavourable God is the element that can intensify the chart's existing imbalance. It is not inherently negative, but should not be over-emphasised."
+  };
+  return meanings[type];
+}
+
+function getGodChartMeaning(bazi, type, elements) {
+  const names = elements.map((element) => elementNames[element]).join(" and ");
+  const roles = elements.map((element) => getElementRoleInChart(bazi, element).replace("In this BaZi chart, ", "")).join(" ");
+  if (type === "yong") {
+    return `For this chart, ${names} is the first adjustment because ${bazi.strength.reason.charAt(0).toLowerCase()}${bazi.strength.reason.slice(1)} ${roles}`;
+  }
+  if (type === "xi") {
+    return `For this chart, ${names} assists the Useful God and provides a secondary route back to balance. ${roles}`;
+  }
+  return `For this chart, too much ${names} would reinforce the side that is already over-supported or increase pressure on the Day Master. ${roles}`;
+}
+
+function createGodPanel(type, title, elements, bazi) {
+  const panel = document.createElement("section");
+  panel.className = `god-panel god-panel-${type}`;
+
+  const label = document.createElement("span");
+  label.className = "god-panel-label";
+  label.textContent = title;
+
+  const element = document.createElement("strong");
+  element.className = "god-panel-element";
+  element.textContent = elements.map((item) => elementNames[item]).join(" · ");
+
+  const definition = document.createElement("p");
+  definition.className = "god-panel-definition";
+  definition.textContent = getGodMeaning(type);
+
+  const chartMeaning = document.createElement("p");
+  chartMeaning.className = "god-panel-chart";
+  chartMeaning.textContent = getGodChartMeaning(bazi, type, elements);
+
+  panel.append(label, element, definition, chartMeaning);
+  return panel;
+}
+
 function renderUsefulGodIntro(container, bazi) {
   if (!container) return;
   container.innerHTML = "";
-  const label = document.createElement("span");
-  label.className = "useful-god-label";
-  label.textContent = "\u559c\u7528\u795e / Useful God";
-  const first = document.createElement("strong");
-  first.className = "useful-god-major";
-  first.textContent = elementNames[bazi.yongShen];
-  const second = document.createElement("span");
-  second.className = "useful-god-secondary";
-  second.textContent = `Second support / \u7b2c\u4e8c\u559c\u7528\u795e: ${elementNames[bazi.xiShen]}`;
-  const role = document.createElement("span");
-  role.className = "useful-god-role";
-  role.textContent = getElementRoleInChart(bazi, bazi.yongShen);
-  const reason = document.createElement("span");
-  reason.className = "useful-god-reason";
-  reason.textContent = getUsefulGodReason(bazi);
-  container.append(label, first, second, reason, role);
+  container.append(
+    createGodPanel("yong", "\u7528\u795e / Useful God", [bazi.yongShen], bazi),
+    createGodPanel("xi", "\u559c\u795e / Favourable God", [bazi.xiShen], bazi),
+    createGodPanel("ji", "\u5fcc\u795e / Unfavourable God", bazi.strength.avoidElements, bazi)
+  );
 }
 
 function completeBaziResult(pillars) {
