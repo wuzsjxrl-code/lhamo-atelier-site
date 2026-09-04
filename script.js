@@ -555,33 +555,33 @@ function getUsefulGodReason(bazi) {
   const yong = elementNames[bazi.yongShen];
   const xi = elementNames[bazi.xiShen];
   const dayPillar = bazi.pillars.day.label;
-  const strengthType = strength.level.includes("Weak") ? "\u8eab\u5f31" : strength.level.includes("Strong") ? "\u8eab\u5f3a" : "\u5747\u8861";
+  const strengthType = strength.level.includes("Weak") ? "a Weak Day Master" : strength.level.includes("Strong") ? "a Strong Day Master" : "a Balanced Day Master";
   const dayElement = elementNames[strength.dayElement];
   const outputElement = elementNames[supportCycle[strength.dayElement]];
   const wealthElement = elementNames[controlCycle[strength.dayElement]];
   const resourceElement = elementNames[getElementThatGenerates(strength.dayElement)];
   const companionElement = dayElement;
-  const lowElements = getLowestKeys(bazi.elementCounts, 2).map((element) => elementNames[element]).join("、");
-  const avoidText = strength.avoidElements.map((element) => elementNames[element]).join("、");
+  const lowElements = getLowestKeys(bazi.elementCounts, 2).map((element) => elementNames[element]).join(" and ");
+  const avoidText = strength.avoidElements.map((element) => elementNames[element]).join(" and ");
   if (strength.level.includes("Weak")) {
-    return `\u76d8\u4e3b\u7684 Day Pillar \u662f ${dayPillar}\uff0c\u65e5\u4e3b\u4e94\u884c\u4e3a ${dayElement}\uff0c\u5c5e\u4e8e${strengthType}\u578b\u3002\u7531\u4e8e\u662f\u8eab\u5f31\u578b\uff0c\u547d\u5c40\u9700\u8981\u589e\u52a0 ${resourceElement}\u7684\u5370\u661f\u652f\u6491\u548c ${companionElement}\u7684\u540c\u7c7b\u6839\u6c14\uff0c\u5148\u8865\u56de\u627f\u8f7d\u80fd\u91cf\uff0c\u518d\u8c08\u8d22\u5bcc\u3001\u4e8b\u4e1a\u548c\u8868\u8fbe\u3002\u56e0\u6b64 ${yong} \u662f\u7b2c\u4e00\u559c\u7528\u795e\uff0c${xi} \u662f\u7b2c\u4e8c\u559c\u7528\u795e\u3002\u4f7f\u7528\u559c\u7528\u795e\u7684\u597d\u5904\u662f\u5e2e\u52a9\u76d8\u4e3b\u589e\u52a0\u7a33\u5b9a\u611f\u3001\u6062\u590d\u529b\u548c\u81ea\u6211\u652f\u6491\uff0c\u51cf\u5c11 ${avoidText} \u8fc7\u91cd\u5e26\u6765\u7684\u6d88\u8017\u611f\u3002`;
+    return `The chart owner's Day Pillar is ${dayPillar}. The Day Master element is ${dayElement}, which makes this chart ${strengthType}. Because the Day Master is weak, the chart needs more ${resourceElement} as resource support and more ${companionElement} as same-element root before wealth, career pressure and outward expression can be carried well. This is why ${yong} is the first Useful God and ${xi} is the second Useful God. Working with these Useful Gods can strengthen steadiness, recovery and self-support while reducing the drain created by too much ${avoidText}.`;
   }
   if (strength.level.includes("Strong")) {
-    return `\u76d8\u4e3b\u7684 Day Pillar \u662f ${dayPillar}\uff0c\u65e5\u4e3b\u4e94\u884c\u4e3a ${dayElement}\uff0c\u5c5e\u4e8e${strengthType}\u578b\u3002\u7531\u4e8e\u662f\u8eab\u5f3a\u578b\uff0c\u547d\u5c40\u4e0d\u9700\u8981\u7ee7\u7eed\u589e\u52a0 ${resourceElement}\u6216 ${companionElement}\uff0c\u800c\u662f\u9700\u8981\u7528 ${outputElement}\u6765\u6cc4\u79c0\u3001\u7528 ${wealthElement}\u6765\u5f15\u5bfc\u80fd\u91cf\u843d\u5230\u4ef7\u503c\u548c\u7ed3\u679c\u4e0a\u3002\u56e0\u6b64 ${yong} \u662f\u7b2c\u4e00\u559c\u7528\u795e\uff0c${xi} \u662f\u7b2c\u4e8c\u559c\u7528\u795e\u3002\u4f7f\u7528\u559c\u7528\u795e\u7684\u597d\u5904\u662f\u5e2e\u52a9\u76d8\u4e3b\u628a\u8fc7\u65fa\u7684\u81ea\u6211\u80fd\u91cf\u8f6c\u5316\u4e3a\u5ba1\u7f8e\u3001\u884c\u52a8\u529b\u3001\u8d22\u5bcc\u5224\u65ad\u548c\u66f4\u6e05\u6670\u7684\u751f\u6d3b\u79e9\u5e8f\u3002`;
+    return `The chart owner's Day Pillar is ${dayPillar}. The Day Master element is ${dayElement}, which makes this chart ${strengthType}. Because the Day Master is strong, the chart does not need more ${resourceElement} or ${companionElement}; it needs ${outputElement} to release and refine excess qi, and ${wealthElement} to direct that energy toward value, results and practical decisions. This is why ${yong} is the first Useful God and ${xi} is the second Useful God. Working with these Useful Gods can turn strong self-energy into taste, action, material judgment and a clearer sense of order.`;
   }
-  return `\u76d8\u4e3b\u7684 Day Pillar \u662f ${dayPillar}\uff0c\u65e5\u4e3b\u4e94\u884c\u4e3a ${dayElement}\uff0c\u5c5e\u4e8e${strengthType}\u578b\u3002\u7531\u4e8e\u547d\u5c40\u63a5\u8fd1\u5747\u8861\uff0c\u4e0d\u9700\u8981\u5927\u91cf\u8865\u67d0\u4e00\u884c\uff0c\u800c\u662f\u4f18\u5148\u589e\u52a0\u76f8\u5bf9\u8f83\u5f31\u3001\u4f46\u80fd\u8ba9\u80fd\u91cf\u6d41\u52a8\u7684\u5143\u7d20\u3002\u5f53\u524d\u8f83\u5b89\u9759\u7684\u5143\u7d20\u662f ${lowElements}\uff0c\u56e0\u6b64 ${yong} \u662f\u7b2c\u4e00\u559c\u7528\u795e\uff0c${xi} \u662f\u7b2c\u4e8c\u559c\u7528\u795e\u3002\u4f7f\u7528\u559c\u7528\u795e\u7684\u597d\u5904\u662f\u5e2e\u52a9\u76d8\u4e3b\u5728\u4e0d\u7834\u574f\u539f\u672c\u7a33\u5b9a\u7684\u524d\u63d0\u4e0b\uff0c\u589e\u52a0\u8868\u8fbe\u3001\u884c\u52a8\u3001\u8d44\u6e90\u6216\u8d22\u5bcc\u65b9\u5411\u7684\u660e\u786e\u611f\u3002`;
+  return `The chart owner's Day Pillar is ${dayPillar}. The Day Master element is ${dayElement}, which makes this chart ${strengthType}. Because the chart is already close to balanced, it does not need a heavy increase of one single element; it benefits from adding the quieter elements that help the qi move smoothly. The less visible elements here are ${lowElements}, so ${yong} is the first Useful God and ${xi} is the second Useful God. Working with these Useful Gods can add clarity in expression, action, resources or wealth direction without disturbing the chart's original stability.`;
 }
 
 function getElementRoleInChart(bazi, element) {
   const relation = getElementRelation(bazi.strength.dayElement, element);
   const roles = {
-    companion: "\u6bd4\u52ab / same-element qi\uff0c\u4ee3\u8868\u6839\u6c14\u3001\u81ea\u4fe1\u3001\u4f53\u529b\u3001\u81ea\u6211\u4e3b\u5f20\u548c\u627f\u53d7\u538b\u529b\u7684\u80fd\u529b\u3002",
-    resource: "\u5370\u661f / resource qi\uff0c\u4ee3\u8868\u5b66\u4e60\u529b\u3001\u4fdd\u62a4\u529b\u3001\u6062\u590d\u529b\u3001\u8d35\u4eba\u8d44\u6e90\u548c\u5185\u5728\u7a33\u5b9a\u611f\u3002",
-    output: "\u98df\u4f24 / output qi\uff0c\u4ee3\u8868\u8868\u8fbe\u529b\u3001\u5ba1\u7f8e\u3001\u624d\u534e\u3001\u624b\u827a\u3001\u521b\u9020\u548c\u628a\u5185\u5728\u80fd\u91cf\u5411\u5916\u6d41\u52a8\u7684\u80fd\u529b\u3002",
-    wealth: "\u8d22\u661f / wealth qi\uff0c\u4ee3\u8868\u4ef7\u503c\u5224\u65ad\u3001\u4ea4\u6613\u80fd\u529b\u3001\u91d1\u94b1\u611f\u3001\u7ed3\u679c\u610f\u8bc6\u548c\u628a\u52aa\u529b\u8f6c\u5316\u4e3a\u5b9e\u7269\u7684\u80fd\u529b\u3002",
-    officer: "\u5b98\u6740 / authority qi\uff0c\u4ee3\u8868\u79e9\u5e8f\u3001\u8d23\u4efb\u3001\u89c4\u5219\u3001\u4e8b\u4e1a\u538b\u529b\u548c\u628a\u91ce\u5fc3\u5851\u5f62\u6210\u7ed3\u6784\u7684\u80fd\u529b\u3002"
+    companion: "same-element qi / Bi Jie, representing root, self-trust, stamina, personal direction and the ability to hold pressure.",
+    resource: "resource qi / Yin, representing learning, protection, recovery, mentors and inner stability.",
+    output: "output qi / Shi Shang, representing expression, aesthetic taste, talent, craft, creativity and the ability to circulate inner energy outward.",
+    wealth: "wealth qi / Cai, representing value judgment, exchange, money sense, result awareness and the ability to turn effort into tangible assets.",
+    officer: "authority qi / Guan Sha, representing order, responsibility, rules, career pressure and the structure that gives ambition a clear form."
   };
-  return `${elementNames[element]} \u5728\u8fd9\u4e2a\u516b\u5b57\u91cc\u5c5e\u4e8e${roles[relation] || "\u5e73\u8861\u7528\u795e\uff0c\u4ee3\u8868\u8ba9\u547d\u5c40\u56de\u5230\u987a\u7545\u72b6\u6001\u7684\u5173\u952e\u5143\u7d20\u3002"}`;
+  return `In this BaZi chart, ${elementNames[element]} functions as ${roles[relation] || "a balancing element that helps the chart return to a smoother state."}`;
 }
 
 function renderUsefulGodIntro(container, bazi) {
