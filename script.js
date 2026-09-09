@@ -744,8 +744,7 @@ function renderUsefulGodIntro(container, bazi) {
   container.innerHTML = "";
   container.append(
     createGodPanel("yong", "\u7528\u795e / Useful God", [bazi.yongShen], bazi),
-    createGodPanel("xi", "\u559c\u795e / Favourable God", [bazi.xiShen], bazi),
-    createGodPanel("ji", "\u5fcc\u795e / Unfavourable God", bazi.strength.avoidElements, bazi)
+    createGodPanel("xi", "\u559c\u795e / Favourable God", [bazi.xiShen], bazi)
   );
 }
 
@@ -957,7 +956,7 @@ if (elementForm) elementForm.addEventListener("submit", (event) => {
   document.querySelector("#bazi-month").textContent = bazi.pillars.month.label;
   document.querySelector("#bazi-day").textContent = bazi.pillars.day.label;
   document.querySelector("#bazi-hour").textContent = bazi.pillars.hour ? bazi.pillars.hour.label : "Unknown";
-  renderUsefulGodIntro(document.querySelector("#result-copy"), bazi);
+  renderUsefulGodIntro(document.querySelector("#god-panels"), bazi);
   const timeNote = birthtime === "unknown" ? "unknown birth hour" : birthtime;
   document.querySelector("#bazi-note").textContent = `Calculated from ${birthday}, ${timeNote}, ${birthplace}. Simplified BaZi for jewellery guidance; location is displayed for context and not converted to true solar time.`;
   document.querySelector("#bazi-pattern").textContent = `${getPatternReading(bazi)} ${bazi.strength.reason}`;
