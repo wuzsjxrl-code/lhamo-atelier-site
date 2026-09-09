@@ -14,17 +14,25 @@
     </div>
 
     <header class="site-header">
-      <a class="brand" href="index.html#top" aria-label="WUORA home"><img class="brand-logo" src="assets/wuora-logo.jpg" alt="" />WUORA</a>
-      <nav class="main-nav" aria-label="Primary navigation">
-        <a href="index.html#collections">New arrivals</a>
-        <a href="shop-all.html">Shop all</a>
-        <a href="bazi-reading.html" aria-current="page">Element finder</a>
-        <a href="index.html#library">Library</a>
+      <button class="menu-toggle" type="button" aria-label="Open navigation menu" aria-controls="nav-drawer" aria-expanded="false"><span aria-hidden="true">&#9776;</span></button>
+      <a class="brand brand-centered" href="index.html#top" aria-label="WUORA home"><img class="brand-logo" src="assets/wuora-logo.jpg" alt="" />WUORA</a>
+      <nav class="header-actions" aria-label="Shop actions">
+        <a href="shop-all.html">Search</a>
+        <a href="shop-all.html">Wishlist</a>
+        <a href="shop-all.html">Bag</a>
       </nav>
-      <nav class="utility-nav" aria-label="Utility navigation">
-        <a href="policies.html">Service</a>
-        <a href="index.html#collections">Cart 0</a>
-      </nav>
+      <aside class="nav-drawer" id="nav-drawer" aria-hidden="true">
+        <button class="drawer-close" type="button" aria-label="Close navigation menu">Close</button>
+        <nav class="drawer-nav" aria-label="Navigation drawer">
+          <a href="index.html#top">Home</a>
+          <a href="shop-all.html">Collections</a>
+          <a href="bazi-reading.html" aria-current="page">Five Element Finder</a>
+          <a href="index.html#library">About</a>
+          <a href="policies.html">Contact</a>
+          <a href="policies.html#account">Account</a>
+        </nav>
+      </aside>
+      <button class="drawer-overlay" type="button" aria-label="Close navigation menu"></button>
     </header>
 
     <main class="reading-page">

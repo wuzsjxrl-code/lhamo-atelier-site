@@ -1048,6 +1048,31 @@ if (productPage) {
   document.querySelector("#product-shipping").textContent = product.shipping;
 }
 
+function setupNavigationDrawer() {
+  const toggle = document.querySelector(".menu-toggle");
+  const drawer = document.querySelector("#nav-drawer");
+  const closeButton = document.querySelector(".drawer-close");
+  const overlay = document.querySelector(".drawer-overlay");
+  const drawerLinks = [...document.querySelectorAll(".drawer-nav a")];
+  if (!toggle || !drawer || !closeButton || !overlay) return;
+
+  const setDrawerOpen = (isOpen) => {
+    document.body.classList.toggle("is-drawer-open", isOpen);
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    drawer.setAttribute("aria-hidden", String(!isOpen));
+  };
+
+  toggle.addEventListener("click", () => setDrawerOpen(true));
+  closeButton.addEventListener("click", () => setDrawerOpen(false));
+  overlay.addEventListener("click", () => setDrawerOpen(false));
+  drawerLinks.forEach((link) => link.addEventListener("click", () => setDrawerOpen(false)));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setDrawerOpen(false);
+  });
+}
+
+setupNavigationDrawer();
+
 const gallery = document.querySelector("#hero-gallery");
 const slides = [...document.querySelectorAll(".hero-slide")];
 const dots = [...document.querySelectorAll(".gallery-dots button")];
