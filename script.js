@@ -1032,7 +1032,7 @@ if (productPage) {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get("product") || "green-tara-turquoise-stack";
   const product = productCatalog[slug] || productCatalog["green-tara-turquoise-stack"];
-  document.title = `${product.name} | Lhamo Atelier`;
+  document.title = `${product.name} | Wuora`;
   document.querySelector("#product-breadcrumb").textContent = product.name;
   document.querySelector("#product-image").src = product.image;
   document.querySelector("#product-image").alt = product.alt;
