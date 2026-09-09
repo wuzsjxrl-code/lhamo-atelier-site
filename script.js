@@ -1,4 +1,4 @@
-﻿const profiles = {
+const profiles = {
   Wood: {
     title: "Wood Profile: growth, renewal, and graceful movement",
     copy: "Your birthday leans toward Wood. Balance it with stones and colors that feel fresh, composed, and upward-moving.",
@@ -1032,7 +1032,7 @@ if (productPage) {
   const params = new URLSearchParams(window.location.search);
   const slug = params.get("product") || "green-tara-turquoise-stack";
   const product = productCatalog[slug] || productCatalog["green-tara-turquoise-stack"];
-  document.title = `${product.name} | Wuora`;
+  document.title = `${product.name} | WUORA`;
   document.querySelector("#product-breadcrumb").textContent = product.name;
   document.querySelector("#product-image").src = product.image;
   document.querySelector("#product-image").alt = product.alt;
