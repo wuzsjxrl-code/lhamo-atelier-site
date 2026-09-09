@@ -15,8 +15,11 @@ for (const file of htmlFiles) {
 }
 
 const script = fs.readFileSync(path.join(root, "script.js"), "utf8");
+const styles = fs.readFileSync(path.join(root, "styles.css"), "utf8");
 assert(!script.includes("Lhamo Atelier"), "script.js should not use the old brand name in dynamic titles");
 assert(!script.includes("Wuora"), "script.js should not use mixed-case Wuora in dynamic titles");
 assert(script.includes("WUORA"), "script.js should use WUORA in dynamic titles");
 
 assert(fs.existsSync(path.join(root, "assets", "wuora-logo.jpg")), "Wuora logo asset should exist");
+assert(styles.includes("width: 52px;"), "Brand logo should be enlarged to 52px wide");
+assert(styles.includes("height: 52px;"), "Brand logo should be enlarged to 52px high");
